@@ -40,6 +40,10 @@
   [cell]
   (contains? cell :flag))
 
+(defn cell-has-boom?
+  [cell]
+  (contains? cell :boom))
+
 (defn nbr-mines-total
   "return the total number of mines on the board or sub board"
   [board]
@@ -49,6 +53,13 @@
   "returns the number of flags placed"
   [board]
   (count (filter cell-has-flag? (flatten board))))
+
+(defn has-boom?
+  "returns true if the board has an exploded mine"
+  [board]
+  (not= (count (filter cell-has-boom? (flatten board))) 0)
+  )
+
 
 (defn place-flag
   "returns a new board with a new flag placed on the x y coordinate"
@@ -60,9 +71,15 @@
 (defn sweep-cell
   "opens a cell, might go boom"
   [board x y]
-  (let [cell (cell-at board x y)]
+  (let [cell (cell-at board x y)
+        neighbors (neighboring-mines-total board x y)]
     (println cell)
-    (assoc (into [] (flatten board)) (flattened-pos x y) (clojure.set/union cell #{:sweeped}))))
+    (println neighbors)
+    (if (cell-has-mine? cell)
+      (do
+        (println "boom!!1")
+        (assoc (into [] (flatten board)) (flattened-pos x y) (clojure.set/union cell #{:boom})))
+      (assoc (into [] (flatten board)) (flattened-pos x y) (clojure.set/union cell #{:sweeped} #{{:neighbors neighbors}})))))
 
 
 (defn neighbors
