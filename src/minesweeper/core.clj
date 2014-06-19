@@ -1,6 +1,8 @@
 (ns minesweeper.core
   (:require clojure.set))
 
+(declare neighboring-mines-total)
+
 ;;array of sets with border of nil to help with out of bounds stuff
 (def board
   [[nil nil            nil      nil            nil      nil]
@@ -57,7 +59,7 @@
 (defn has-boom?
   "returns true if the board has an exploded mine"
   [board]
-  (not= (count (filter cell-has-boom? (flatten board))) 0)
+  (pos? (count (filter cell-has-boom? (flatten board))))
   )
 
 
@@ -77,7 +79,7 @@
     (println neighbors)
     (if (cell-has-mine? cell)
       (do
-        (println "boom!!1")
+        (println "BOOM!!")
         (assoc (into [] (flatten board)) (flattened-pos x y) (clojure.set/union cell #{:boom})))
       (assoc (into [] (flatten board)) (flattened-pos x y) (clojure.set/union cell #{:sweeped} #{{:neighbors neighbors}})))))
 
@@ -137,10 +139,14 @@
   [board]
   (println "Board:")
   (println board)
-  (println "Place a flag or sweep a cell")
+  (println "Place a flag or sweep a cell:")
   (let [move (read-input)]
     (println move)
-    (make-move board (first move) (second move) (nth move 2))
+    (let [result-board (make-move board (first move) (second move) (nth move 2))]
+      (if (has-boom? result-board)
+        (println "OH NOES!! GAME OVER!")
+        (input-move result-board))
+     )
     ))
 
 
