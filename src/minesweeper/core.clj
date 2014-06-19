@@ -22,6 +22,12 @@
   [x y]
   (+ (* sizey y) x))
 
+(defn get-row
+  [board y]
+  (let [flat-board (flatten board)]
+    (into [] (subvec (vec flat-board) (* y sizex) (+ (* y sizex) sizex))))
+  )
+
 (defn cell-at
   "returns a cell at a coordinate"
   [board x y]
@@ -67,7 +73,7 @@
   "returns a new board with a new flag placed on the x y coordinate"
   [board x y]
   (let [cell (cell-at board x y)]
-    (println cell)
+    ;(println cell)
     (assoc (into [] (flatten board)) (flattened-pos x y) (clojure.set/union cell #{:flag}))))
 
 (defn sweep-cell
@@ -75,8 +81,8 @@
   [board x y]
   (let [cell (cell-at board x y)
         neighbors (neighboring-mines-total board x y)]
-    (println cell)
-    (println neighbors)
+    ;(println cell)
+    ;(println neighbors)
     (if (cell-has-mine? cell)
       (do
         (println "BOOM!!")
@@ -94,7 +100,7 @@
                                        (subvec (vec flat-board) (- (flattened-pos x y) 1) (+ (flattened-pos x y) 2))
                                        (subvec (vec flat-board) (+ (flattened-pos x y) (- sizex 1)) (+ (flattened-pos x y) (+ sizex 2)))
                                        ))]
-      (println neighbors-with-centre)
+      ;(println neighbors-with-centre)
       (into []
             (concat
              (subvec neighbors-with-centre 0 4 ) (subvec neighbors-with-centre 5 9))))))
@@ -104,17 +110,29 @@
   [board x y]
   (nbr-mines-total (neighbors board x y)))
 
+(defn item-str
+  [item]
+  (case item
+    :mine "m"
+    :flag "f"
+    ))
+
 (defn print-cell
   "prints a cell"
   [cell]
-  (println cell))
+  (let [item (flatten (into [] cell))]
+    (map item-str item)))
+
+(defn print-row
+  [row]
+  (println (map print-cell row)))
 
 (defn print-board
   "prints the board"
   [board]
-  (doseq [row (range 0 (- sizey 1))]
-    (doseq [column (range 0 (- sizex 1))]
-      (print-cell (cell-at board column row)))))
+  (doseq [row (range 0 sizey)]
+    ;(println row)
+    (print-row (get-row board row))))
 
 ;; Functions for interactions
 
@@ -122,7 +140,7 @@
   "Converts an input, 'f 2 3', as a :flag on cell at x=2 y=3 "
   []
   (let [input (read-line)]
-    (println input)
+    ;(println input)
     (re-seq #"[1-9a-zA-Z]" input)))
 
 (defn make-move
@@ -131,23 +149,20 @@
   (println type x y)
   (case type
     "f" (place-flag board (Integer. x) (Integer. y))
-    "s" (sweep-cell board (Integer. x) (Integer. y)))
-  )
+    "s" (sweep-cell board (Integer. x) (Integer. y))))
   
 (defn input-move
   "Ask a user to place a flag or sweep a cell"
   [board]
   (println "Board:")
-  (println board)
+  (print-board board)
   (println "Place a flag or sweep a cell:")
   (let [move (read-input)]
     (println move)
     (let [result-board (make-move board (first move) (second move) (nth move 2))]
       (if (has-boom? result-board)
         (println "OH NOES!! GAME OVER!")
-        (input-move result-board))
-     )
-    ))
+        (input-move result-board)))))
 
 
 (defn foo
