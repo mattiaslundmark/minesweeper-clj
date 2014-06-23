@@ -112,10 +112,13 @@
 
 (defn item-str
   [item]
-  (case item
-    :mine "m"
-    :flag "f"
-    ))
+  (if ( map? item)
+    (get item :neighbors)
+    (case item
+      :flag "f"
+      :sweeped "s"
+      ""
+      )))
 
 (defn print-cell
   "prints a cell"
