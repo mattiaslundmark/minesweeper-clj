@@ -6,10 +6,10 @@
 ;;array of sets with border of nil to help with out of bounds stuff
 (def board
   [[nil nil            nil      nil            nil      nil]
-   [nil #{:mine :flag} nil      nil            #{:mine} nil]
-   [nil nil            nil      #{:flag}       nil      nil]
-   [nil nil            nil      #{:flag :mine} nil      nil]
-   [nil nil            #{:mine} nil            nil      nil]
+   [nil {:mine true :flag true} nil      nil            {:mine true} nil]
+   [nil nil            nil      {:flag true}       nil      nil]
+   [nil nil            nil      {:flag true :mine true} nil      nil]
+   [nil nil            {:mine true} nil            nil      nil]
    [nil nil            nil      nil            nil      nil]])
 
 (def sizex 6)
@@ -65,16 +65,14 @@
 (defn has-boom?
   "returns true if the board has an exploded mine"
   [board]
-  (pos? (count (filter cell-has-boom? (flatten board))))
-  )
-
+  (pos? (count (filter cell-has-boom? (flatten board)))))
 
 (defn place-flag
   "returns a new board with a new flag placed on the x y coordinate"
   [board x y]
   (let [cell (cell-at board x y)]
     ;(println cell)
-    (assoc (into [] (flatten board)) (flattened-pos x y) (clojure.set/union cell #{:flag}))))
+    (assoc (into [] (flatten board)) (flattened-pos x y) (assoc cell :flag true))))
 
 (defn sweep-cell
   "opens a cell, might go boom"
@@ -86,8 +84,8 @@
     (if (cell-has-mine? cell)
       (do
         (println "BOOM!!")
-        (assoc (into [] (flatten board)) (flattened-pos x y) (clojure.set/union cell #{:boom})))
-      (assoc (into [] (flatten board)) (flattened-pos x y) (clojure.set/union cell #{:sweeped} #{{:neighbors neighbors}})))))
+        (assoc (into [] (flatten board)) (flattened-pos x y) (assoc cell :boom true)))
+      (assoc (into [] (flatten board)) (flattened-pos x y) (assoc cell :sweeped true :neighbors neighbors)))))
 
 
 (defn neighbors
